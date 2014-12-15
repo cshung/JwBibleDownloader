@@ -1,4 +1,4 @@
 JwBibleDownloader
 =================
 
-Download Bible Content from http://www.jw.org
+The script is written to download Bible Content from [Jehovah's Witness](http://www.jw.org).
