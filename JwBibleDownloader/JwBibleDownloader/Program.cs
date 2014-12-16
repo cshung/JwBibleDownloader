@@ -7,6 +7,7 @@
     using System.IO;
     using System.Linq;
     using System.Net.Http;
+    using System.Text;
     using System.Threading.Tasks;
 
     internal static class Program
@@ -19,12 +20,13 @@
         private static async Task MainAsync()
         {
             // TODO: Replace it with your language
+            // string bookLink = "http://www.jw.org/en/publications/bible/nwt/books/";
             string bookLink = "http://www.jw.org/zh-hans/%E5%87%BA%E7%89%88%E7%89%A9/%E5%9C%A3%E7%BB%8F/nwt/%E5%9C%A3%E7%BB%8F%E7%BB%8F%E5%8D%B7/";
             Bible bible = new Bible();
             bible.Groups = new List<Group>();
             using (HttpClient client = new HttpClient())
             {
-                client.Timeout = TimeSpan.FromSeconds(1);
+                client.Timeout = TimeSpan.FromSeconds(10);
                 var result = await client.GetAsync(bookLink);
                 HtmlDocument indexPageDocument = new HtmlDocument();
                 indexPageDocument.LoadHtml(await result.Content.ReadAsStringAsync());
@@ -42,7 +44,7 @@
                         var bookName = sprite.PreviousSibling.InnerText;
                         currentBook.Name = bookName;
                         Console.WriteLine(bookName);
-                        foreach (var chaptersNode in sprite.ParentNode.ParentNode.NextSibling.NextSibling.ChildNodes[1].ChildNodes.Where(lc => lc.Name == "li"))
+                        foreach (var chaptersNode in sprite.ParentNode.ParentNode.NextSibling.NextSibling.ChildNodes.First(n=>n.Name == "ul").ChildNodes.Where(lc => lc.Name == "li"))
                         {
                             string chaptersName = chaptersNode.ChildNodes[0].InnerText;
                             Console.WriteLine(chaptersName);
@@ -60,9 +62,17 @@
                                     HtmlDocument bookChapterDocument = new HtmlDocument();
                                     bookChapterDocument.LoadHtml(await bookPage.Content.ReadAsStringAsync());
                                     var bibleTextNode = bookChapterDocument.DocumentNode.SelectNodes("//div[@id='bibleText']")[0];
+                                    int verseNumber = 0;
                                     foreach (var verse in bibleTextNode.ChildNodes.Where(bc => bc.Name.Equals("span")))
                                     {
-                                        currentChapter.Verses.Add(verse.InnerText);
+                                        verseNumber++;
+                                        StringBuilder verseBuilder = new StringBuilder();
+                                        verseBuilder.Append(verseNumber);
+                                        foreach (var textNode in verse.ChildNodes[0].ChildNodes.Where(n => n.Name == "#text"))
+                                        {
+                                            verseBuilder.Append(textNode.InnerText);
+                                        }
+                                        currentChapter.Verses.Add(verseBuilder.ToString());
                                     };
                                 }
                                 catch
