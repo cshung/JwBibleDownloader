@@ -68,9 +68,24 @@
                                         verseNumber++;
                                         StringBuilder verseBuilder = new StringBuilder();
                                         verseBuilder.Append(verseNumber);
-                                        foreach (var textNode in verse.ChildNodes[0].ChildNodes.Where(n => n.Name == "#text"))
+                                        foreach (var node in verse.ChildNodes[0].ChildNodes)
                                         {
-                                            verseBuilder.Append(textNode.InnerText);
+                                            if (node.Name == "sup" && node.Attributes["class"] != null && node.Attributes["class"].Value == "verseNum")
+                                            {
+                                                continue;
+                                            }
+
+                                            if (node.Name == "span" && node.Attributes["class"] != null && node.Attributes["class"].Value == "chapterNum")
+                                            {
+                                                continue;
+                                            }
+
+                                            if (node.Name == "a" && node.Attributes["class"] != null && node.Attributes["class"].Value == "xrefLink jsBibleLink")
+                                            {
+                                                continue;
+                                            }
+
+                                            verseBuilder.Append(node.InnerText);
                                         }
                                         currentChapter.Verses.Add(verseBuilder.ToString());
                                     };
